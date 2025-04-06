@@ -46,7 +46,13 @@ $ pip install -r requirements.txt
 
 ### Configure with Claude AI Desktop
 
-Add the following to your Claude Desktop config file (typically at `C:\Users\[YourUsername]\AppData\Roaming\Claude\claude_desktop_config.json`):
+Add the following to your Claude Desktop config file (typically at 
+
+```
+C:\Users\[YourUsername]\AppData\Roaming\Claude\claude_desktop_config.json
+# or
+C:\Users\[YourUsername]\AppData\Local\AnthropicClaude\claude_desktop_config.json
+```
 
 ```json
 {

@@ -967,12 +967,10 @@ async def get_revoked_techniques(domain: str = "enterprise", include_description
 
 @mcp.tool()
 async def generate_layer(match: str, score: int, domain: str = "enterprise") -> str:
-    """Generate an ATT&CK navigator layer in JSON format based on the provided input
-        Valid match values are ATT&CK ID's for group, mitigation, software, and data component objects within the selected ATT&CK data.
-        If an invalid match happens, present the user with an error message.
+    """Generate an ATT&CK navigator layer in JSON format based on a matching ATT&CK ID value
 
     Args:
-        match: Keyword to generate ATT&CK navigator layer for. Valid match values are ATT&CK ID's for group, mitigation, software, and data component objects within the selected ATT&CK data. If an invalid match happens, present the user with an error message.
+        match: Keyword to generate ATT&CK navigator layer for.  Valid match values are single ATT&CK ID's for group (GXXX), mitigation (MXXX), software (SXXX), and data component objects (DXXX) within the selected ATT&CK data. NEVER directly input a technique (TXXX).If an invalid match happens, or if multiple ATT&CK ID's are provided, present the user with an error message.
         score: Score to assign to each technique in the layer
         domain: Domain name ('enterprise', 'mobile', or 'ics')
     """

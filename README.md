@@ -87,8 +87,8 @@ C:\Users\[YourUsername]\AppData\Local\AnthropicClaude\claude_desktop_config.json
 
 - [MITRE ATT&CK](https://attack.mitre.org/) - Knowledge base of adversary tactics and techniques
 - [MITRE ATT&CK Python](https://github.com/mitre-attack/mitreattack-python) - Python library to interact with the knowledge base
-- [Anthropic](https://www.anthropic.com/) - Developers of the Model-Context Protocol
 - [ATT&CK Navigator](https://github.com/mitre-attack/attack-navigator) - Tool for visualizing ATT&CK matrices
+- [Anthropic](https://www.anthropic.com/) - Developers of the Model-Context Protocol
 
 ---
 

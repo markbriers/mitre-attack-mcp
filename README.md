@@ -24,8 +24,6 @@
   - Query relationships between malware, threat actors, and techniques
 * Technique Overlap Analysis
   - Compare techniques used by different threat actors or malware families
-* Cross-platform
-  - Works with Claude AI and compatible with other LLMs supporting MCP
 
 ## Installation
 
@@ -40,13 +38,19 @@ $ cd mitre-attack-mcp
 
 # Install dependencies
 $ pip install -r requirements.txt
+
+# OR install the most important dependencies manually
+
+$ pip install mcp
+$ pip install mitreattack-python
+
 ```
 
 ## How To Use
 
 ### Configure with Claude AI Desktop
 
-Add the following to your Claude Desktop config file (typically at 
+Add the following to your Claude Desktop config file, typically found at:
 
 ```
 C:\Users\[YourUsername]\AppData\Roaming\Claude\claude_desktop_config.json
@@ -82,6 +86,7 @@ C:\Users\[YourUsername]\AppData\Local\AnthropicClaude\claude_desktop_config.json
 ## Credits
 
 - [MITRE ATT&CK](https://attack.mitre.org/) - Knowledge base of adversary tactics and techniques
+- [MITRE ATT&CK Python](https://github.com/mitre-attack/mitreattack-python) - Python library to interact with the knowledge base
 - [Anthropic](https://www.anthropic.com/) - Developers of the Model-Context Protocol
 - [ATT&CK Navigator](https://github.com/mitre-attack/attack-navigator) - Tool for visualizing ATT&CK matrices
 

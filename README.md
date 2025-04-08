@@ -75,6 +75,10 @@ C:\Users\[YourUsername]\AppData\Local\AnthropicClaude\claude_desktop_config.json
 > **Note**
 > The second argument is the path where MITRE ATT&CK data will be stored. The server automatically downloads the latest data files if needed.
 
+## Changelog
+
+v1.0.0 - Initial release
+
 ## Use Cases
 
 * Query for detailed information about specific malware, tactics, or techniques
@@ -82,6 +86,8 @@ C:\Users\[YourUsername]\AppData\Local\AnthropicClaude\claude_desktop_config.json
 * Generate visual ATT&CK Navigator layers for threat analysis
 * Find campaign overlaps between different threat actors
 * Identify common techniques used by multiple malware families
+
+Please see my [blog](https://www.remyjaspers.com/blog/mitre_attack_mcp_server/) for more information and examples. 
 
 ## Credits
 

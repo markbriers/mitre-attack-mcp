@@ -1,5 +1,5 @@
 from typing import Any, Dict, List
-import os, json, argparse
+import os, json, argparse, re
 
 from mitreattack.stix20 import MitreAttackData
 from mitreattack.navlayers.manipulators.layerops import LayerOps
@@ -966,88 +966,145 @@ async def get_revoked_techniques(domain: str = "enterprise", include_description
 #####################################################################
 
 @mcp.tool()
-async def generate_layer(match: str, score: int, domain: str = "enterprise") -> str:
+async def generate_layer(attack_id: str, score: int, domain: str = "enterprise") -> str:
     """Generate an ATT&CK navigator layer in JSON format based on a matching ATT&CK ID value
 
     Args:
-        match: Keyword to generate ATT&CK navigator layer for.  Valid match values are single ATT&CK ID's for group (GXXX), mitigation (MXXX), software (SXXX), and data component objects (DXXX) within the selected ATT&CK data. NEVER directly input a technique (TXXX).If an invalid match happens, or if multiple ATT&CK ID's are provided, present the user with an error message.
+        attack_id: ATT&CK ID to generate ATT&CK navigator layer for. Valid match values are single ATT&CK ID's for group (GXXX), mitigation (MXXX), software (SXXX), and data component objects (DXXX) within the selected ATT&CK data. NEVER directly input a technique (TXXX). If an invalid match happens, or if multiple ATT&CK ID's are provided, present the user with an error message.
         score: Score to assign to each technique in the layer
         domain: Domain name ('enterprise', 'mobile', or 'ics')
     """
-    # Use the data path from arguments
-    data_path = args.data_path
-    
-    # Domain key is used in the filename format
-    domain_key = f"{domain}-attack"
-    stix_path = os.path.join(data_path, "v" + release_info.LATEST_VERSION, f"{domain_key}.json")
-    
-    # Make sure the STIX file exists
-    if not os.path.exists(stix_path):
-        return {"error": f"STIX data file '{domain_key}.json' not found in data path '{data_path}'. Please ensure the data has been downloaded."}
-    
-    handle = UsageLayerGenerator(source='local', domain=domain, resource=stix_path)
-    layer = handle.generate_layer(match=match)
-    
-    # Filter the techniques where score = 0
-    layer.layer.techniques = [t for t in layer.layer.techniques if t.score > 0]
-    
-    # Apply score to the techniques
-    for t in layer.layer.techniques:
-        t.score = score
+    try:
+        # Validate input parameters
+        valid_domains = ['enterprise', 'mobile', 'ics']
+        
+        if domain not in valid_domains:
+            raise ValueError(f"Invalid domain: '{domain}'. Must be one of: {', '.join(valid_domains)}")
+            
+        if not attack_id or not isinstance(attack_id, str):
+            raise ValueError("match must be a non-empty string")
+            
+        # Validate score is an integer
+        if not isinstance(score, int):
+            raise ValueError("score must be an integer")
+            
+        # Validate match format
+        if not re.match(r'^[GMSD]\d+$', attack_id):
+            raise ValueError("match must be a valid ATT&CK ID format (GXXX, MXXX, SXXX, or DXXX)")
+            
+        # Use the data path from arguments
+        data_path = args.data_path
+        
+        # Domain key is used in the filename format
+        domain_key = f"{domain}-attack"
+        stix_path = os.path.join(data_path, "v" + release_info.LATEST_VERSION, f"{domain_key}.json")
+        
+        # Make sure the STIX file exists
+        if not os.path.exists(stix_path):
+            raise FileNotFoundError(f"STIX data file '{domain_key}.json' not found in data path '{data_path}'. Please ensure the data has been downloaded.")
+        
+        handle = UsageLayerGenerator(source='local', domain=domain, resource=stix_path)
+        layer = handle.generate_layer(match=attack_id)
+        
+        if not layer or not layer.layer or not layer.layer.techniques:
+            return f"No techniques found for '{attack_id}' in the '{domain}' domain."
+        
+        # Filter the techniques where score = 0
+        layer.layer.techniques = [t for t in layer.layer.techniques if t.score > 0]
+        
+        # Apply score to the techniques
+        for t in layer.layer.techniques:
+            t.score = score
 
-    return json.dumps(layer.to_dict())
+        return json.dumps(layer.to_dict())
+        
+    except ValueError as ve:
+        return f"Validation error: {str(ve)}"
+    except FileNotFoundError as fe:
+        return f"File error: {str(fe)}"
+    except KeyError as ke:
+        return f"Data error: {str(ke)}"
+    except Exception as e:
+        return f"An unexpected error occurred: {str(e)}"
 
 
 @mcp.tool()
-async def layer_metadata() -> str:
-    """ Always call this tool whenever a prompt requires the generation of a MITRE ATT&CK Navigator Layer,
-        such as the generate_layer tool. Always insert this metadata in the generated layer. 
+async def get_layer_metadata(domain='enterprise') -> str:
     """
-    metadata = {
-            "name": "layer",
-            "versions": {
-                "attack": "16",
-                "navigator": "5.1.0",
-                "layer": "4.5"
-            },
+    Always call this tool whenever a prompt requires the generation of a MITRE ATT&CK Navigator Layer,
+    such as the generate_layer tool. Always insert this metadata in the generated layer.
+    
+    Args:
+        domain (str, optional): The ATT&CK domain ('enterprise', 'mobile', or 'ics'). Defaults to 'enterprise'.
+    
+    Returns:
+        str: JSON string containing the appropriate layer metadata
+    """
+    # Base metadata template
+    base_metadata = {
+        "name": "layer",
+        "versions": {
+            "attack": "16",
+            "navigator": "5.1.0",
+            "layer": "4.5"
+        },
+        "description": "",
+        "sorting": 0,
+        "layout": {
+            "layout": "side",
+            "aggregateFunction": "average",
+            "expandedSubtechniques": "none"
+        },
+        "techniques": [],
+        "gradient": {
+            "colors": [
+                "#ff6666ff",
+                "#ffe766ff",
+                "#8ec843ff"
+            ],
+            "minValue": 0,
+            "maxValue": 100
+        },
+        "legendItems": [],
+        "metadata": [],
+        "links": [],
+        "tacticRowBackground": "#dddddd",
+    }
+    
+    # Domain-specific configurations
+    domain_configs = {
+        'enterprise': {
             "domain": "enterprise-attack",
-            "description": "",
             "filters": {
                 "platforms": [
-                    "Windows",
-                    "Linux",
-                    "macOS",
-                    "Network",
-                    "PRE",
-                    "Containers",
-                    "IaaS",
-                    "SaaS",
-                    "Office Suite",
-                    "Identity Provider"
+                    "Windows", "Linux", "macOS", "Network", "PRE",
+                    "Containers", "IaaS", "SaaS", "Office Suite", "Identity Provider"
                 ]
-            },
-            "sorting": 0,
-            "layout": {
-                "layout": "side",
-                "aggregateFunction": "average",
-                "expandedSubtechniques": "none"
-            },
-            "techniques": [],
-            "gradient": {
-                "colors": [
-                    "#ff6666ff",
-                    "#ffe766ff",
-                    "#8ec843ff"
-                ],
-                "minValue": 0,
-                "maxValue": 100
-            },
-            "legendItems": [],
-            "metadata": [],
-            "links": [],
-            "tacticRowBackground": "#dddddd",
+            }
+        },
+        'mobile': {
+            "domain": "mobile-attack",
+            "filters": {
+                "platforms": ["Android", "iOS"]
+            }
+        },
+        'ics': {
+            "domain": "ics-attack",
+            "filters": {
+                "platforms": ["None"]
+            }
         }
-
+    }
+    
+    # Validate domain and default to enterprise if invalid
+    domain = domain.lower()
+    if domain not in domain_configs:
+        domain = 'enterprise'
+    
+    # Add domain-specific configuration to base metadata
+    metadata = base_metadata.copy()
+    metadata.update(domain_configs[domain])
+    
     return json.dumps(metadata)
 
 if __name__ == "__main__":

@@ -78,6 +78,7 @@ C:\Users\[YourUsername]\AppData\Local\AnthropicClaude\claude_desktop_config.json
 ## Changelog
 
 v1.0.0 - Initial release
+V1.0.1 - Improved robustness of layer metadata generation and error handling in layer generation function
 
 ## Use Cases
 
